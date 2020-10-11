@@ -4,6 +4,14 @@ Analysis of the [ICPSR 36404](https://www.icpsr.umich.edu/web/ICPSR/studies/3640
 using descriptive machine learning.
 
 ## Usage
+
+First, [install the Rust stable toolchain](https://www.rust-lang.org/tools/install).
+
+Compile this project with `cargo build --release`. No additional steps should be necessary
+in order to compile.
+
+The produced program provides the following usage:
+
 ```
 analyzer 0.1.0
 gahag <gabriel.s.b@live.com>
@@ -45,7 +53,7 @@ ARGS:
 
 ## Additional crates
 
-The following crates were developed in order to support this work:
+The following Rust crates were developed in order to support this work:
 - [dci](https://docs.rs/dci/)
 - [onehot](https://docs.rs/onehot/)
 - [bitmatrix](https://docs.rs/bitmatrix/)
