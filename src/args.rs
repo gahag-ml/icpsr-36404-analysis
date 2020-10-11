@@ -72,10 +72,14 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 					sex: parse_sex(matches.value_of("sex")),
 				},
 				("load", Some(matches)) => Command::Load {
-					min_sup_ratio: value_t!(matches, "min_sup", f64)?,
+					min_sup_ratio: validate_min_sup(
+						value_t!(matches, "min_sup", f64)?
+					)?,
 				},
 				("run", Some(matches)) => Command::Run {
-					min_sup_ratio: value_t!(matches, "min_sup", f64)?,
+					min_sup_ratio: validate_min_sup(
+						value_t!(matches, "min_sup", f64)?
+					)?,
 					recidivists: matches.is_present("recidivists"),
 					sex: parse_sex(matches.value_of("sex")),
 				},
@@ -100,6 +104,18 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 			),
 			_ => Err(error.into())
 		}
+	}
+}
+
+
+fn validate_min_sup(min_sup: f64) -> anyhow::Result<f64> {
+	if (0.0 ..= 1.0).contains(&min_sup) {
+		Ok(min_sup)
+	}
+	else {
+		Err(
+			anyhow::anyhow!("invalid minimum support: {}", min_sup)
+		)
 	}
 }
 
