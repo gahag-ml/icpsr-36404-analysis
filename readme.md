@@ -5,7 +5,10 @@ using descriptive machine learning.
 
 ## Usage
 
-First, [install the Rust stable toolchain](https://www.rust-lang.org/tools/install).
+First, download the `delimited` version of the dataset. It is a tsv file, which is used as
+input for the analysis program.
+
+Then, [install the Rust stable toolchain](https://www.rust-lang.org/tools/install).
 
 Compile this project with `cargo build --release`. No additional steps should be necessary
 in order to compile.
