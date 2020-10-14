@@ -27,6 +27,7 @@ where R: io::BufRead
 				None
 			}
 			else {
+				self.buffer.pop();
 				Some(&self.buffer[..])
 			}
 		)

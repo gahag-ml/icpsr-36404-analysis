@@ -62,7 +62,7 @@ fn read_records<R: io::BufRead>(
 				           && record.offense_type   != data::OffenseType::Missing
 				           // && record.education      != data::Education::Missing
 				           && record.race           != data::Race::Missing
-				           && record.age_admission  != data::AgeAdmission::Missing
+				           && record.age_admission  != data::Age::Missing
 				           && record.time_served    != data::TimeServed::Missing
 				           && record.release_type   != data::ReleaseType::Missing
 				           && record.release_type   != data::ReleaseType::Missing;
@@ -189,7 +189,7 @@ fn main() -> anyhow::Result<()> {
 		Command::Distribution { recidivists, sex, race } => {
 			let (_, data_distribution) = read_records(stdin, recidivists, sex, race)?;
 
-			log::info!("{}", data_distribution);
+			print!("{}", data_distribution);
 
 			return Ok(());
 		},
@@ -214,7 +214,7 @@ fn main() -> anyhow::Result<()> {
 		Command::Run { min_sup_ratio, recidivists, sex, race } => {
 			let (records, data_distribution) = read_records(stdin, recidivists, sex, race)?;
 
-			println!("{}", data_distribution);
+			log::info!("{}", data_distribution);
 
 			(encode_records(&records), min_sup_ratio)
 		},
