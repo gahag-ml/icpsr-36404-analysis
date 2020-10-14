@@ -18,6 +18,7 @@ use crate::{
 	args::Command,
 	data::{
 		Sex,
+		Race,
 		Record,
 		distribution::Distribution as DataDistribution
 	},
@@ -29,6 +30,7 @@ fn read_records<R: io::BufRead>(
 	reader: R,
 	recidivists: bool,
 	sex: Option<Sex>,
+	race: Option<Race>,
 ) -> io::Result<(Vec<Record>, DataDistribution)> {
 	let clock = time::Instant::now();
 
@@ -67,6 +69,10 @@ fn read_records<R: io::BufRead>(
 
 				if let Some(sex) = &sex {
 					valid &= record.sex == *sex;
+				}
+
+				if let Some(race) = &race {
+					valid &= record.race == *race;
 				}
 
 				if valid {
@@ -180,8 +186,8 @@ fn main() -> anyhow::Result<()> {
 	let stdin = stdin.lock();
 
 	let (dataset, min_sup_ratio) = match command {
-		Command::Distribution { recidivists, sex } => {
-			let (_, data_distribution) = read_records(stdin, recidivists, sex)?;
+		Command::Distribution { recidivists, sex, race } => {
+			let (_, data_distribution) = read_records(stdin, recidivists, sex, race)?;
 
 			log::info!("{}", data_distribution);
 
@@ -193,8 +199,8 @@ fn main() -> anyhow::Result<()> {
 			min_sup_ratio
 		),
 
-		Command::Save { recidivists, sex } => {
-			let (records, data_distribution) = read_records(stdin, recidivists, sex)?;
+		Command::Save { recidivists, sex, race } => {
+			let (records, data_distribution) = read_records(stdin, recidivists, sex, race)?;
 
 			log::info!("{}", data_distribution);
 
@@ -205,8 +211,8 @@ fn main() -> anyhow::Result<()> {
 			return Ok(());
 		},
 
-		Command::Run { min_sup_ratio, recidivists, sex } => {
-			let (records, data_distribution) = read_records(stdin, recidivists, sex)?;
+		Command::Run { min_sup_ratio, recidivists, sex, race } => {
+			let (records, data_distribution) = read_records(stdin, recidivists, sex, race)?;
 
 			println!("{}", data_distribution);
 

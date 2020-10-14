@@ -48,7 +48,8 @@ FLAGS:
     -V, --version        Prints version information
 
 OPTIONS:
-    -s, --sex <sex>    include only the given sex [possible values: male, female]
+        --race <race>    include only the given race [possible values: black, white, hispanic, other]
+        --sex <sex>      include only the given sex [possible values: male, female]
 
 ARGS:
     <min_sup>    the minimum support ratio ([0, 1.0])

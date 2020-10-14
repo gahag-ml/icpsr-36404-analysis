@@ -17,10 +17,12 @@ pub enum Command {
 		min_sup_ratio: f64,
 		recidivists: bool,
 		sex: Option<data::Sex>,
+		race: Option<data::Race>,
 	},
 	Save {
 		recidivists: bool,
 		sex: Option<data::Sex>,
+		race: Option<data::Race>,
 	},
 	Load {
 		min_sup_ratio: f64,
@@ -28,6 +30,7 @@ pub enum Command {
 	Distribution {
 		recidivists: bool,
 		sex: Option<data::Sex>,
+		race: Option<data::Race>,
 	},
 }
 
@@ -42,18 +45,21 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 			(@subcommand distribution =>
 				(about: "load the original dataset from stdin and display the data distribution")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
-				(@arg sex: -s --sex +takes_value possible_value[male female] "include only the given sex"))
+				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand run =>
 				(about: "runs the entire pipeline")
 				(@arg min_sup: +required "the minimum support ratio ([0, 1.0])")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
-				(@arg sex: -s --sex +takes_value possible_value[male female] "include only the given sex"))
+				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand save =>
 				(about: "load the original dataset from stdin and output the serialized matrix to stdout")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
-				(@arg sex: -s --sex +takes_value possible_value[male female] "include only the given sex"))
+				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand load =>
 				(about: "load the serialized matrix from stdin and run the algorithm")
@@ -66,10 +72,12 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 				("distribution", Some(matches)) => Command::Distribution {
 					recidivists: matches.is_present("recidivists"),
 					sex: parse_sex(matches.value_of("sex")),
+					race: parse_race(matches.value_of("race")),
 				},
 				("save", Some(matches)) => Command::Save {
 					recidivists: matches.is_present("recidivists"),
 					sex: parse_sex(matches.value_of("sex")),
+					race: parse_race(matches.value_of("race")),
 				},
 				("load", Some(matches)) => Command::Load {
 					min_sup_ratio: validate_min_sup(
@@ -82,6 +90,7 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 					)?,
 					recidivists: matches.is_present("recidivists"),
 					sex: parse_sex(matches.value_of("sex")),
+					race: parse_race(matches.value_of("race")),
 				},
 				_ => {
 					let mut out = Vec::new();
@@ -121,10 +130,24 @@ fn validate_min_sup(min_sup: f64) -> anyhow::Result<f64> {
 
 
 fn parse_sex(arg: Option<&str>) -> Option<data::Sex> {
-	match arg {
-		Some("male") => Some(data::Sex::Male),
-		Some("female") => Some(data::Sex::Female),
-		Some(_) => panic!("invalid sex arg"),
-		_ => None,
-	}
+	arg.map(
+		|arg| match arg {
+			"male"   => data::Sex::Male,
+			"female" => data::Sex::Female,
+			_ => panic!("invalid sex arg"),
+		}
+	)
+}
+
+
+fn parse_race(arg: Option<&str>) -> Option<data::Race> {
+	arg.map(
+		|arg| match arg {
+			"black"    => data::Race::Black,
+			"hispanic" => data::Race::Hispanic,
+			"white"    => data::Race::White,
+			"other"    => data::Race::Other,
+			_ => panic!("invalid race arg"),
+		}
+	)
 }
