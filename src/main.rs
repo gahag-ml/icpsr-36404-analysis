@@ -5,7 +5,7 @@ mod itemset;
 
 use std::{
 	cmp,
-	collections::HashSet,
+	collections::HashMap,
 	io::{self, Write},
 	time
 };
@@ -35,7 +35,7 @@ fn read_records<R: io::BufRead>(
 	let clock = time::Instant::now();
 
 	let mut records = Vec::with_capacity(8_000_000); // number of expected records
-	let mut ids: HashSet<Box<[u8]>> = HashSet::new();
+	let mut earliest_records: HashMap<Box<[u8]>, Record> = HashMap::new();
 	let mut data_distribution = DataDistribution::new();
 
 	let mut line_splitter = util::RawLineSplitter::new(reader);
@@ -51,13 +51,21 @@ fn read_records<R: io::BufRead>(
 
 		let id = fields.next().unwrap();
 
-		if recidivists && !ids.contains(id) {
-			ids.insert(id.into());
-			continue;
-		}
-
 		match data::Record::parse(fields) {
-			Ok(record) => {
+			Ok(mut record) => {
+				if options.recidivists {
+					match earliest_records.get_mut(id) {
+						// Found an earlier record. We can swap *before* the validity check.
+						Some(early_record) => if early_record.admission_year > record.admission_year {
+							std::mem::swap(early_record, &mut record);
+						},
+						None => { // The current record is the earliest for now.
+							earliest_records.insert(id.into(), record);
+							continue;
+						},
+					};
+				}
+
 				let mut valid = record.admission_type != data::AdmissionType::Missing
 				           && record.offense_type   != data::OffenseType::Missing
 				           // && record.education      != data::Education::Missing
