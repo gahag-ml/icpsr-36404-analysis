@@ -15,23 +15,26 @@ pub enum Command {
 	Version(Box<str>),
 	Run {
 		min_sup_ratio: f64,
-		recidivists: bool,
-		sex: Option<data::Sex>,
-		race: Option<data::Race>,
+		options: Options,
 	},
 	Save {
-		recidivists: bool,
-		sex: Option<data::Sex>,
-		race: Option<data::Race>,
+		options: Options,
 	},
 	Load {
 		min_sup_ratio: f64,
 	},
 	Distribution {
-		recidivists: bool,
-		sex: Option<data::Sex>,
-		race: Option<data::Race>,
+		options: Options,
 	},
+}
+
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Options {
+	pub recidivists: bool,
+	pub sex: Option<data::Sex>,
+	pub admission_type: Option<data::AdmissionType>,
+	pub race: Option<data::Race>,
 }
 
 
@@ -46,6 +49,7 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 				(about: "load the original dataset from stdin and display the data distribution")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
 				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg admission_type: --("admission-type") +takes_value possible_value[parole new other] "include only the given admission type")
 				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand run =>
@@ -53,12 +57,14 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 				(@arg min_sup: +required "the minimum support ratio ([0, 1.0])")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
 				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg admission_type: --("admission-type") +takes_value possible_value[parole new other] "include only the given admission type")
 				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand save =>
 				(about: "load the original dataset from stdin and output the serialized matrix to stdout")
 				(@arg recidivists: --recidivists "whether to include only recidivists")
 				(@arg sex: --sex +takes_value possible_value[male female] "include only the given sex")
+				(@arg admission_type: --("admission-type") +takes_value possible_value[parole new other] "include only the given admission type")
 				(@arg race: --race +takes_value possible_value[black white hispanic other] "include only the given race"))
 
 			(@subcommand load =>
@@ -70,14 +76,10 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 		Ok(matches) => Ok(
 			match matches.subcommand() {
 				("distribution", Some(matches)) => Command::Distribution {
-					recidivists: matches.is_present("recidivists"),
-					sex: parse_sex(matches.value_of("sex")),
-					race: parse_race(matches.value_of("race")),
+					options: parse_options(&matches),
 				},
 				("save", Some(matches)) => Command::Save {
-					recidivists: matches.is_present("recidivists"),
-					sex: parse_sex(matches.value_of("sex")),
-					race: parse_race(matches.value_of("race")),
+					options: parse_options(&matches),
 				},
 				("load", Some(matches)) => Command::Load {
 					min_sup_ratio: validate_min_sup(
@@ -88,9 +90,7 @@ pub fn parse(args: impl Iterator<Item = String>) -> anyhow::Result<Command> {
 					min_sup_ratio: validate_min_sup(
 						value_t!(matches, "min_sup", f64)?
 					)?,
-					recidivists: matches.is_present("recidivists"),
-					sex: parse_sex(matches.value_of("sex")),
-					race: parse_race(matches.value_of("race")),
+					options: parse_options(&matches),
 				},
 				_ => {
 					let mut out = Vec::new();
@@ -129,12 +129,34 @@ fn validate_min_sup(min_sup: f64) -> anyhow::Result<f64> {
 }
 
 
+fn parse_options(matches: &clap::ArgMatches) -> Options {
+	Options {
+		recidivists: matches.is_present("recidivists"),
+		sex: parse_sex(matches.value_of("sex")),
+		admission_type: parse_admission_type(matches.value_of("admission_type")),
+		race: parse_race(matches.value_of("race")),
+	}
+}
+
+
 fn parse_sex(arg: Option<&str>) -> Option<data::Sex> {
 	arg.map(
 		|arg| match arg {
 			"male"   => data::Sex::Male,
 			"female" => data::Sex::Female,
 			_ => panic!("invalid sex arg"),
+		}
+	)
+}
+
+
+fn parse_admission_type(arg: Option<&str>) -> Option<data::AdmissionType> {
+	arg.map(
+		|arg| match arg {
+			"parole"   => data::AdmissionType::Parole,
+			"new" => data::AdmissionType::New,
+			"other" => data::AdmissionType::Other,
+			_ => panic!("invalid admission-type arg"),
 		}
 	)
 }

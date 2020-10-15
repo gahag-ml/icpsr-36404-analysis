@@ -17,8 +17,6 @@ use onehot::OneHot;
 use crate::{
 	args::Command,
 	data::{
-		Sex,
-		Race,
 		Record,
 		distribution::Distribution as DataDistribution
 	},
@@ -28,9 +26,7 @@ use crate::{
 
 fn read_records<R: io::BufRead>(
 	reader: R,
-	recidivists: bool,
-	sex: Option<Sex>,
-	race: Option<Race>,
+	options: args::Options
 ) -> io::Result<(Vec<Record>, DataDistribution)> {
 	let clock = time::Instant::now();
 
@@ -53,6 +49,8 @@ fn read_records<R: io::BufRead>(
 
 		match data::Record::parse(fields) {
 			Ok(mut record) => {
+				let mut valid = true;
+
 				if options.recidivists {
 					match earliest_records.get_mut(id) {
 						// Found an earlier record. We can swap *before* the validity check.
@@ -61,26 +59,31 @@ fn read_records<R: io::BufRead>(
 						},
 						None => { // The current record is the earliest for now.
 							earliest_records.insert(id.into(), record);
-							continue;
+							valid = false;
 						},
 					};
 				}
 
-				let mut valid = record.admission_type != data::AdmissionType::Missing
-				           && record.offense_type   != data::OffenseType::Missing
-				           // && record.education      != data::Education::Missing
-				           && record.race           != data::Race::Missing
-				           && record.age_admission  != data::Age::Missing
-				           && record.time_served    != data::TimeServed::Missing
-				           && record.release_type   != data::ReleaseType::Missing
-				           && record.release_type   != data::ReleaseType::Missing;
+				valid &= record.admission_type != data::AdmissionType::Missing
+				      && record.offense_type   != data::OffenseType::Missing
+				      // Education is disconsidered because it is missing in all records.
+				      // && record.education      != data::Education::Missing
+				      && record.race           != data::Race::Missing
+				      && record.age_admission  != data::Age::Missing
+				      && record.time_served    != data::TimeServed::Missing
+				      && record.release_type   != data::ReleaseType::Missing
+				      && record.release_type   != data::ReleaseType::Missing;
 
-				if let Some(sex) = &sex {
-					valid &= record.sex == *sex;
+				if let Some(sex) = options.sex {
+					valid &= record.sex == sex;
 				}
 
-				if let Some(race) = &race {
-					valid &= record.race == *race;
+				if let Some(admission_type) = options.admission_type {
+					valid &= record.admission_type == admission_type;
+				}
+
+				if let Some(race) = options.race {
+					valid &= record.race == race;
 				}
 
 				if valid {
@@ -194,8 +197,8 @@ fn main() -> anyhow::Result<()> {
 	let stdin = stdin.lock();
 
 	let (dataset, min_sup_ratio) = match command {
-		Command::Distribution { recidivists, sex, race } => {
-			let (_, data_distribution) = read_records(stdin, recidivists, sex, race)?;
+		Command::Distribution { options } => {
+			let (_, data_distribution) = read_records(stdin, options)?;
 
 			print!("{}", data_distribution);
 
@@ -207,8 +210,8 @@ fn main() -> anyhow::Result<()> {
 			min_sup_ratio
 		),
 
-		Command::Save { recidivists, sex, race } => {
-			let (records, data_distribution) = read_records(stdin, recidivists, sex, race)?;
+		Command::Save { options } => {
+			let (records, data_distribution) = read_records(stdin, options)?;
 
 			log::info!("{}", data_distribution);
 
@@ -219,8 +222,8 @@ fn main() -> anyhow::Result<()> {
 			return Ok(());
 		},
 
-		Command::Run { min_sup_ratio, recidivists, sex, race } => {
-			let (records, data_distribution) = read_records(stdin, recidivists, sex, race)?;
+		Command::Run { min_sup_ratio, options } => {
+			let (records, data_distribution) = read_records(stdin, options)?;
 
 			log::info!("{}", data_distribution);
 

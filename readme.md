@@ -48,8 +48,10 @@ FLAGS:
     -V, --version        Prints version information
 
 OPTIONS:
-        --race <race>    include only the given race [possible values: black, white, hispanic, other]
-        --sex <sex>      include only the given sex [possible values: male, female]
+        --admission-type <admission_type>    include only the given admission type [possible values: parole, new, other]
+        --race <race>                        include only the given race [possible values: black, white, hispanic,
+                                             other]
+        --sex <sex>                          include only the given sex [possible values: male, female]
 
 ARGS:
     <min_sup>    the minimum support ratio ([0, 1.0])
