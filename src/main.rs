@@ -66,12 +66,10 @@ fn read_records<R: io::BufRead>(
 
 				valid &= record.admission_type != data::AdmissionType::Missing
 				      && record.offense_type   != data::OffenseType::Missing
-				      // Education is disconsidered because it is missing in all records.
-				      // && record.education      != data::Education::Missing
+				      && record.sentence       != data::Sentence::Missing
 				      && record.race           != data::Race::Missing
 				      && record.age_admission  != data::Age::Missing
 				      && record.time_served    != data::TimeServed::Missing
-				      && record.release_type   != data::ReleaseType::Missing
 				      && record.release_type   != data::ReleaseType::Missing;
 
 				if let Some(sex) = options.sex {
