@@ -152,7 +152,7 @@ fn load_dataset<R: io::BufRead>(reader: R) -> anyhow::Result<dci::Matrix<ItemSet
 }
 
 
-fn run_dci(dataset: &dci::Matrix<ItemSet>, min_sup: dci::Support) -> Vec<(ItemSet, dci::Support)> {
+fn run_dci(dataset: &dci::Matrix<ItemSet>, min_sup: dci::Support) -> Box<[(ItemSet, dci::Support)]> {
 	let clock = time::Instant::now();
 
 	let mut result = dci::parallel::closed(dataset, min_sup);
@@ -242,7 +242,7 @@ fn main() -> anyhow::Result<()> {
 
 	let result = run_dci(&dataset, min_sup);
 
-	for (closed_itemset, support) in result {
+	for (closed_itemset, support) in result.into_vec() { // Boxed slice has no owned iterator.
 		println!(
 			"{} ({:.1}%): {}",
 			support,

@@ -20,7 +20,7 @@ bitvec = { version = "0.19", features = ["serde"] }
 bitmatrix = { version = "0.1", features = ["serde"] }
 
 onehot = { version = "0.1", features = ["derive", "matrix"] }
-dci = { version = "0.2", features = ["matrix"] }
+dci = { version = "0.3", features = ["matrix"] }
 
 [profile.release]
 lto = true

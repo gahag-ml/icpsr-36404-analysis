@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "dci"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ed340367d565e74c80e3bd5f1c31d8ad506a91eb64d0d5ae9b10ff85bb09978"
+checksum = "9ede8377db1bf6ffba3fde5033ecee7f99449dd203f2947e18818cf0e3002e36"
 dependencies = [
  "bitmatrix",
  "bitvec",
