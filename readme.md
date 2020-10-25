@@ -63,8 +63,11 @@ fernanda <fernandaguimaraes28@gmail.com>
 First, install the necessary `packages` to run the notebook:
 
 `pip install scikit-learn`
+
 `pip install pandas`
+
 `pip install datetime`
+
 `pip install numpy`
 
 `pip install pysugbroup`
