@@ -1,0 +1,322 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% How to use writeLaTeX: 
+%
+% You edit the source code here on the left, and the preview on the
+% right shows you the result within a few seconds.
+%
+% Bookmark this page and share the URL with your co-authors. They can
+% edit at the same time!
+%
+% You can upload figures, bibliographies, custom classes and
+% styles using the files menu.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+
+\usepackage{graphicx,url}
+\usepackage[brazil]{babel}
+\usepackage{babelbib}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[table, x11names]{xcolor}
+\usepackage{threeparttable}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+\setlength{\extrarowheight}{3pt}
+
+\sloppy
+
+\title{Mineração de \textit{Itemsets} Frequentes e Descoberta de Subgrupos em Análise de Dados Carcerários}
+
+\author{Gabriel Bastos\inst{1}, Fernanda G. Araújo\inst{1} }
+
+\address{
+  Departamento de Ciência da Computação\\
+  Universidade Federal de Minas Gerais (UFMG) -- Belo Horizonte, MG -- Brazil
+  \email{\{bastos.gabriel,fernandaguim\}@dcc.ufmg.br}
+}
+
+\begin{document} 
+
+\maketitle
+
+\begin{resumo} 
+  Neste trabalho, apresentamos uma metodologia e um arcabouço de análise para bases de dados carcerários, utilizando técnicas de aprendizado de máquina descritivo, em particular a mineração de \textit{itemsets} frequentes e descoberta de subgrupos. Ao analisar uma base de dados estadunidense de registros prisionais, nossos resultados revelam padrões peculiares, que podem ser de interesse para especialistas das ciências sociais. Nosso arcabouço permite a fácil reprodução dos resultados apresentados, bem como análises mais amplas da base de dados.
+\end{resumo}
+
+
+\section{Introdução}
+
+O encarceramento pode trazer prejuízos que vão além da privação da liberdade, como o comprometimento de relacionamentos pessoais \cite{Apel2010}, a tendência à reincidência criminal \cite{Bales2012}, a dificuldade de ressocialização \cite{doi:10.1177/002242787301000102}, e até mesmo problemas de saúde \cite{10.1093/heapro/dap034}. O amplo impacto do sistema prisional na vida das pessoas, bem como na sociedade como um todo, motiva o estudo dos seus efeitos e dinâmicas.
+
+A literatura atual apresenta diversas metodologias para análise de dados carcerários, em duas principais vertentes. A primeira utiliza técnicas demográficas tradicionais, que exploram análises de estatística descritiva para caracterizar os dados carcerários. Já a segunda, utilza métodos de ciência das redes para análise de núcleos familiares e sociais onde indivíduos experimentam passagem pela prisão. \cite{Chung_2018}
+
+Neste trabalho, propomos a abordagem de aprendizado de máquina descritivo para análise de dados carcerários. Apresentamos uma técnica de modelagem dos dados para a utilização de algoritmos bem estabelecidos na área, bem como sua aplicação em uma base de dados de registros prisionais estadunidense. Consolidamos nossa metodologia em um arcabouço de análise, que permite a fácil reprodução dos resultados, bem como análises mais profundas com novos parâmetros.
+
+Nossos resultados demonstram duas categorias de padrões e subgrupos. A primeira constitui implicações diretas das leis, e não aprentam grande utilidade além da confimação de que o sistema judiciário pratica de fato a legislação. Já na segunda, observamos características peculiares que indicam dinâmicas não projetadas pelas leis. Como trabalhos futuros, sugerimos a análise destes resultados por especialistas das ciências sociais, bem como a confirmação da relevância destes padrões através de testes de significância estatística.
+
+\pagebreak
+
+\section{Base de Dados}
+
+A base de dados selecionada para estudo fornece informações colhidas de prisões estaduais e federais pelo Programa Nacional de Relatórios de Correções dos Estados Unidos da América. \cite{dataset} Os dados constituem registros individuais de cada estadia na prisão, incluindo um identificador único para cada pessoa. Consideramos como reincidentes os registros de nova admissão de um mesmo detento, desconsiderando o mais antigo. As demais características são descritas na tebela \ref{tab:features}.
+
+\begin{table}[h]
+\begin{threeparttable}
+\caption{Características apresentadas na base de dados}
+\label{tab:features}
+\begin{tabularx}{\linewidth}{lcX}
+Característica & Tipo & Instâncias\\
+\hline
+Identificador & \texttt{I} & um valor distinto para cada indivíduo\\
+\arrayrulecolor{lightgray}\hline
+Gênero & \texttt{C} & homem, mulher\\
+Tipo de admissão & \texttt{C} & retorno de liberdade condicional, novo, outro\\
+Categoria do crime & \texttt{C} & ordem pública, drogas, violência, propriedade, outras\\
+Etnia & \texttt{C} & branco, hispânico, negro, outra\\
+Idade na admissão & \texttt{C} & 18--24, 25--34, 35--44, 45--54, 55 anos ou mais\\
+Tempo servido & \texttt{C} & 0--1, 1--2, 2--5, 5--10, 10 anos ou mais\\
+Tipo de soltura & \texttt{C} & condicional, incondicional, outras\\
+Sentença máxima & \texttt{C} & 0--1, 1--2, 2--5, 5--10, 10--25, 25 anos ou mais, perpétua\\
+\arrayrulecolor{lightgray}\hline
+Categoria detalhada & \texttt{C} & fraude, propriedade, abuso sexual, homicídio doloso, roubo,  homicídio culposo, furto veicular, violência, ordem pública, assalto, furto, outras\\
+Idade na soltura & \texttt{C} & 18--25, 25--34, 35--44, 45--54, 55 ou mais\\
+\arrayrulecolor{lightgray}\hline
+Admissão & \texttt{A} & 1950--2014\\
+Data de soltura & \texttt{A} & 1971--2014\\
+Soltura mandatória & \texttt{A} & 1927--9997 \footnotemark[1] \\
+Soltura projetada & \texttt{A} & 1900--9997 \footnotemark[1] \\
+Liberdade condicional\footnotemark[3] & \texttt{A} & 1966--9997 \footnotemark[1]\\
+Estado & \texttt{C} & 41 estados distintos\\
+\arrayrulecolor{lightgray}\hline
+Nível de escolaridade & \texttt{C} & $\varnothing$ \footnotemark[2] \\
+\arrayrulecolor{lightgray}\hline
+\end{tabularx}
+\kern 4pt \hskip 1pt Tipo \texttt{I}: Identificador \hfill Tipo \texttt{C}: Categórico \hfill Tipo \texttt{A}: Ano, numérico
+\end{threeparttable}
+\end{table}
+Considerando as características selecionadas em nossa metodologia, a base de dados totaliza cerca de 8 milhões de instâncias completas. Nestas, temos recortes notáveis de 89\% homens e 11\% mulheres, 39,7\% brancos e 39,4\% negros, e 17,9\% registros de reincidência. É importante notar que, apesar da proporção entre brancos e negros estar balanceada, ela não corresponde à totalidade da sociedade estadunidense na época, que constituia cerca de 80\% brancos e 13\% negros. \cite{census}
+
+\footnotetext[1]{Este campo aprenseta valores inconcebíveis, e portanto foi desconsiderado em nossas análises.}
+\footnotetext[2]{Em todas instâncias da base de dados, este campo é aprensentado como faltante.}
+\footnotetext[3]{Data de elegibilidade. A data de soltura corresponde a qualquer saída, condicional ou não.}
+
+\pagebreak
+
+\section{Metodologia}
+
+Apresentamos um arcabouço de análise do conjunto de dados, \cite{framework} incluindo uma nova implementação genérica e paralela do algoritmo \textit{DCI-Closed} \cite{dci} para a mineração de \textit{itemsets} fechados frequentes, bem como ferramental e métricas para descoberta de subgrupos. Nosso arcabouço é capaz de realizar recortes baseados em variantes de características relevantes na base de dados, e a mineração de padrões e subgrupos nestes recortes.
+
+\subsection{Mineração de \textit{Itemsets} Frequentes}
+
+Com o objetivo de descobrir e investigar padrões notáveis no conjunto de dados, optamos por investir em uma metodologia de mineração de \textit{itemsets} frequentes. A partir de um conjunto arbitrário de itens $\mathcal{I}$, define-se \textit{itemsets} como subconjuntos de $\mathcal{I}$, e a base de dados $\mathcal{D}$ como uma lista de transações, onde cada transação constitui um \textit{itemset}. Em seguida, define-se o suporte de um \textit{itemset} como o número de transações que contém tal \textit{itemset}:
+\[
+ \text{sup}(i) = \big|\big[\, t \mid \forall\, t \in \mathcal{D}: i \subseteq t \,\big]\big|
+\]
+
+De forma a reduzir o espaço de busca por \textit{itemsets} e promover resultados mais palatáveis, o conceito de \textit{itemsets} fechados é estabelecido. Um \textit{itemset} fechado é um representante da sua classe de equivalência, não apresentando perda de informação em relação às definições anteriores, o que satisfaz nosso caso de uso de forma equivalente. Um \textit{itemset} é fechado se, e somente se não há nenhum superconjunto deste \textit{itemset} com o mesmo suporte:  \cite{dci}
+\[
+  i \text{ é fechado} \iff \nexists\, j \supset i: \text{sup}(j) = \text{sup}(i)
+\]
+
+Finalmente, define-se um valor arbitrário como suporte mínimo, o que permite a definição dos \textit{itemsets} frequentes: aqueles cujo suporte é maior ou igual ao suporte mínimo. Os \textit{itemsets} frequentes constituem o resultado do algoritmo de mineração, e podem fornecer uma melhor compreensão dos padrões e dinâmicas envolvidas na base de dados.
+
+Para aplicar tal metodologia em nosso estudo, adaptamos nossa base de dados ao formato adequado, e escolhemos um algoritmo capaz de lidar com a dimensão da nossa aplicação. Apresentamos o seguinte método para mapear a base de dados para um conjunto de transações constituídas de itens: 
+
+\begin{enumerate}
+    \item Interpretamos cada registro como uma transação, o que implica na definição dos resultados como os \textit{itemsets} frequentes nos registros prisionais.
+    \item Realizamos a codificação \textit{one-hot} das características apresentadas na primeira seção da tabela \ref{tab:features}, o que corresponde à interpretação de cada variante de cada característica como um item distinto, e um \textit{itemset} como um conjunto destas variantes. As demais características apresentam dados redundantes, desbalanceados ou intratáveis, e portanto foram desconsideradas.
+\end{enumerate}
+
+Optando pela mineração de \textit{itemsets} fechados frequentes, o resultado desta metodologia são os conjuntos fechados frequentes de variantes nos registros prisionais. Tal informação é útil para análise das dinâmicas envolvidas no sistema carcerário estadunidense, e fornece uma base para estudos conseguintes na área das ciências sociais.
+
+\subsection{Descoberta de Subgrupos}
+A descoberta de subgrupos é uma técnica de mineração de dados que extrai regras interessantes em relação a uma variável de destino (\textit{target}), combinando a indução preditiva e descritiva. Os padrões extraídos são normalmente representados na forma de regras, sendo chamados de subgrupos.
+
+Desta forma, a descoberta de subgrupos se enquadra entre o aprendizado descritivo supervisionado e o não supervisionado, sendo considerada um ponto médio entre a extração de regras de associação e a obtenção de regras de classificação. Wrobel define esta metodologia da seguinte forma:
+
+``Na descoberta de subgrupos, assumimos que recebemos uma chamada população de indivíduos
+(objetos, clientes, ...) e uma propriedade daqueles indivíduos nos quais estamos interessados. A tarefa de descoberta de subgrupos é, então, descobrir os subgrupos da população que são estatisticamente "mais interessantes", ou seja, são os maiores possíveis e têm as mais incomuns características estatísticas (distribucionais) com respeito à propriedade de interesse''. \cite{Wrobel2001}
+
+Uma regra $R$, que consiste em uma descrição de subgrupo induzida, pode ser formalmente
+definida como: \cite{DBLP:journals/corr/abs-1106-4576}
+\[
+    R: \text{Cond} \rightarrow \text{Target}_{\text{Value}}
+\]
+onde \textit{Target} é uma variável de interesse, e \textit{Cond} é um conjunto de características que é capaz de descrever uma estatística incomum da distribuição em relação ao valor \textit{Value}.
+
+Considerando nossa base de dados, um exemplo de uma possível regra seria:
+\[
+    R_x: \text{liberdade condicional, revogação da condicional} \rightarrow \text{reincidente}
+\]
+
+Aqui, caso o individuo esteja em liberade condicional, e esta seja revogada, ele é reincidente criminal.
+
+Optamos por utilizar a biblioteca \textit{pysubgroup} \cite{lemmerich2018pysubgroup} como implementação para descoberta de subgrupos. Além de reportar os padrões descobertos, a mesma reporta ainda um \textit{score} de qualidade, baseado na acurácia ponderada:
+
+\[
+    AP = \frac{|\text{\textit{subgroup}}|}{|\text{\textit{dataset}}|} \cdot (p_{\text{\textit{subgroup}}} - p_{\text{\textit{dataset}}})
+\]
+onde $p_{\text{\textit{subgroup}}}$ é o número de positivos no subgrupo, e $p_{\text{\textit{dataset}}}$ é o número de positivos na base de dados.
+
+Em nossa metodologia, optamos por utilizar o algoritmo \textit{Beam Search} \cite{10.5555/3327757.3327953}, que consiste numa busca heurística que explora os \textit{k} estados de um grafo, ao invés de somente um. Em particular, difere da abordagem gulosa tradicional, que seleciona o melhor estado atual e descarta o restante. O \textit{Beam Search} mantém o controle de \textit{k} estados, selecionando o melhor resultado de dada largura. Não obstante, outros algoritmos fornecidos pela biblioteca também podem ser explorados.
+
+\pagebreak
+
+\section{Resultados}
+
+\subsection{Mineração de \textit{Itemsets} Frequentes}
+Considerando a grande quantidade de registros na base de dados, arbitramos um suporte mínimo de 5\% para a mineração de \textit{itemsets} frequentes, o que representa cerca de $400.000$ registros. A mineração utilizando tal parâmetro produz diversos padrões frequentes, dos quais observamos duas principais categorias.
+
+A primeira e mais frequente categoria, constitui padrões decorrentes da dinâmica legal dos sistemas jurídico e prisional estadunidense. Padrões como por exemplo $\{ \text{sentença de 2 a 5 anos}, \text{0 a 1 anos servidos}, \text{saída condicional} \}$ com suporte 21.9\%, não constituem informação notável, pois são uma mera consequência das leis. Tal categoria de padrões é recorrente em nossos resultados, e deve ser identificada e desconsiderada por especialistas durante análise.
+
+A segunda categoria é a que constitui o extrato de valor de nosso estudo. Padrões cuja ocorrência não aparenta decorrer de algum aparato legal foram observados, mas com a devida ressalva. O real significado destes padrões deve ser apontado por especialistas das ciências sociais em trabalhos futuros, e nossas observações são meros palpites e sugestões de padrões inusitados. Apresentamos algumas ocorrências destes padrões nas tabelas \ref{tab:racism} e \ref{tab:recidivists}. \vspace{-9pt}
+
+\begin{table}[h!]
+\caption{Padrões com enfoque étnico}
+\label{tab:racism}
+\setlength\columnsep{-38pt}
+\begin{multicols}{2}
+\begin{tabular}{lr}
+Variantes de características & Suporte\\
+\hline
+propriedade, negro & 10.5\%\\
+propriedade, branco & 14.6\%\\
+\arrayrulecolor{lightgray}\hline
+drogas, negro & 14.0\%\\
+drogas, branco & 9.5\%\\
+\arrayrulecolor{lightgray}\hline
+violência, negro & 10.0\%\\
+violência, branco & 8.5\%\\
+\arrayrulecolor{darkgray}\hline
+drogas, negro, 0 a 1 a. s. & 8.5\%\\
+drogas, branco, 0 a 1 a. s. & 6.3\%\\
+\arrayrulecolor{lightgray}\hline
+negro, 0 a 1 a. s. & 22.5\%\\
+branco, 0 a 1 a. s. & 23.8\%\\
+\arrayrulecolor{lightgray}\hline
+negro, 1 a 2 a. s. & 7.7\%\\
+branco, 1 a 2 a. s. & 8.0\%\\
+\arrayrulecolor{lightgray}\hline
+negro, 2 a 5 a. s. & 6.5\%\\
+branco, 2 a 5 a. s. & 5.7\%
+\end{tabular}
+{\paragraph{} a. s.: anos servidos}
+\vfill\null\columnbreak
+\begin{tabular}{lr}
+Variantes de características & Suporte\\
+\hline
+negro, condicional & 27.5\%\\
+branco, condicional & 28.5\%\\
+negro, incondicional & 11.5\%\\
+branco, incondicional & 10.3\%\\
+\arrayrulecolor{lightgray}\hline
+nova admissão, negro, condicional & 16.5\%\\
+nova admissão, branco, condicional & 18.4\%\\
+\arrayrulecolor{lightgray}\hline
+negro, 0 a 1 a. s., condicional & 15.4\%\\
+branco, 0 a 1 a. s., condicional & 17.1\%\\
+negro, 0 a 1 a. s., incondicional & 6.8\%\\
+branco, 0 a 1 a. s., incondicional & 6.2\%\\
+\arrayrulecolor{darkgray}\hline
+negro, entre 18 e 24 anos & 10.3\%\\
+branco, entre 18 e 24 anos & 8.2\%\\
+\arrayrulecolor{lightgray}\hline
+branco, entre 25 e 34 anos & 13.9\%\\
+negro, entre 25 e 34 anos & 13.4\%\\
+\arrayrulecolor{lightgray}\hline
+branco, entre 35 e 44 anos & 11.1\%\\
+negro, entre 35 e 44 anos & 10.0\%
+\end{tabular}
+\end{multicols}
+\end{table} \vspace{-23pt}
+Na tabela \ref{tab:racism}, apresentamos alguns padrões que demonstram diferenças entre as etnias branca e negra, apesar da base de dados ser balanceada com 39,7\% brancos e 39,4\% negros. Primeiro, notamos uma distinção entre as tipificações dos crimes cometidos por ambas etnias. Adiante, observamos padrões cuja ocorrência levanta a suspeita do racismo. Notavelmente, os negros apresentam menor participação relativa em benefícios como liberdade condicional e penas brandas. Além disso, na tabela \ref{tab:recidivists} mostramos que negros são consideravelmente mais reincidentes que brancos.
+
+\begin{table}[h!]
+\caption{Padrões em reincidentes}
+\label{tab:recidivists}
+\centering
+\begin{tabular}{lr}
+Variantes de características & Suporte\\
+\hline
+negro & 48.1\%\\
+branco & 38.6\%\\
+\arrayrulecolor{lightgray}\hline
+entre 18 e 24 anos & 14.3\%\\
+entre 25 e 34 anos & 38.6\%\\
+entre 35 e 44 anos & 29.9\%\\
+entre 45 e 54 anos & 14.5\%\\
+\arrayrulecolor{lightgray}\hline
+sentença de 2 a 5 anos & 39.3\%\\
+sentença de 2 a 5 anos, condicional & 28.2\%\\
+sentença de 2 a 5 anos, 0 a 1 anos servidos & 17.6\%\\
+sentença de 2 a 5 anos, 1 a 2 anos servidos & 14.4\%
+\end{tabular}
+\end{table}
+
+Na tabela \ref{tab:recidivists}, observamos que a grande massa de reincidentes são pessoas com mais de 24 anos, ao contrário do que se observa no conjunto de dados completo, onde 24.1\% possuem 24 anos ou menos. Em seguida, notamos que apesar das sentenças mais severas de 2 a 5 anos, grande parte dos reincidentes são bem sucedidos em obter liberdade condicional, servindo menos que 2 anos.
+
+\subsection{Descoberta de subgrupos}
+Da mesma forma que na mineração de \textit{itemsets} frequentes, a descoberta de subgrupos produz diversos resultados, dos quais grande parte são uma consequência direta das leis. Novamente, cabe aos especialistas a detecção e filtragem destes subgrupos.
+
+\begin{table}[h!]
+\caption{Amostra dos subgrupos descobertos}
+\label{tab:subgroups}
+\centering
+\begin{tabular}{l>{\raggedleft\arraybackslash}p{30pt}}
+Subgrupo & \hspace{-2.9em} Tamanho\\
+\hline
+ liberdade condicional, tempo servido $<$ 10 anos & 2 \\
+ liberdade condicional, retorno da condicional & 2 \\
+ liberdade condicional, categoria da ofensa $=$ outra & 2 \\
+ \arrayrulecolor{lightgray}\hline
+ idade $<$ 55, liberdade condicional, etnia $\neq$ outra & 3 \\
+ idade $<$ 55, liberdade condicional, tempo servido $<$ 5 & 3 \\
+ \arrayrulecolor{lightgray}\hline
+ idade $<$ 55, liberdade condicional, tempo servido $<$ 10, homem & 4 \\
+ idade $<$ 55, liberdade condicional, tempo servido $<$ 10, sentença $\neq$ perpétua & 4 \\
+\end{tabular}
+\end{table}
+
+Na tabela \ref{tab:subgroups}, apresentamos uma amostra dos subgrupos observados. O \textit{score} de todas instâncias são próximos de 0,061. Notavelmente, os subgrupos compartilham a característica da liberadade condicional, acompanhadas de outras características distintas, como raça, tempo servido e sentença.
+
+\pagebreak
+
+\section{Conclusão}
+Apresentamos um arcabouço robusto de análise da base de dados, implementando metodologias de mineração de \textit{itemsets} frequentes e descoberta de subgrupos. Através deste, fornecemos a facilidade de estudo sobre a base e os resultados obtidos. Os resultados são facilmente reprodutíveis, e a variação dos parâmetros também pode ser realizada, promovendo análises mais completas dos dados. Convidamos os leitores a explorar a base de dados utilizando nosso arcabouço.
+
+Nossos resultados apresentam interessantes perspectivas, propiciando novas análises por especialistas. Dentre os pontos chave, observamos padrões que levantam a suspeita de racismo, além de padrões e subgrupos que indicam dinâmicas inusitadas para reincidentes, bem como liberdade condicional.
+
+Para trabalhos futuros, sugerimos a análise de nossos resultados por especialistas das ciências sociais, de forma a agregar conclusões com um aspecto crítico bem fundamentado. Além disso, sugerimos a confirmação da validez dos padrões apresentados por meio de testes de significância estatística, confirmando sua representatividade mediante ao universo dos dados.
+
+\section{Trabalhos Relacionados}
+
+Compton explora como o crime contra a propriedade pode afetar o comportamento de equilíbrio geral estático e dinâmico de famílias e empresas. \cite{RePEc:pra:mprapa:97002} Em contraste com as literaturas a seguir, trata-se o crime como uma transferência, e não como uma produção doméstica.
+
+Seguindo na linha de raciocínio sobre o sistema de Justiça, temos ainda o tema de justiça para adultos emergentes e abordagens adequadas à idade. \cite{Perker2019EmergingAJ} Este relatório examina as implicações da acusação automática no sistema de justiça criminal do estado de Illinois, de todos os jovens com 18 anos ou mais, da mesma maneira que acusa e condena pessoas de 40 ou 50 anos.
+
+Em outra perspectiva, Chung apresenta um estudo sobre raça nos EUA no século \textit{XX} \cite{raceandfamily}, onde examina o risco e a prevalência de prisão dentro das redes familiares de americanos negros e brancos durante o “boom da prisão” (1985-1995). Notavelmente, estima-se que o americano negro médio, nascido no auge do boom da prisão, experimentou a prisão de um parente pela primeira vez aos 7 anos, e aos 65 anos pertencerá a uma família em que pelo menos 1 em 7 parentes em idade produtiva já foram presos.
+
+Adiante, Chung e Peter apresentam um estudo sobre prisão em massa e família extensa, \cite{Chung_2018}. Em constraste ao estudo apresentado anteriormente, conclui que o americano branco médio experimenta a prisão de um parente a partir dos 39 anos, e aos 65 pertence a uma família na qual 1 em cada 20 parentes em idade produtiva já foi preso.
+
+Tais trabalhos apresentam diversas perspectivas sobre a mesma base de dados carcerários utilizada em nosso estudo, decorrentes de análises por especialistas das ciências sociais. De forma alternativa, apresentamos novas possibilidades de estudo e compreensão para os especialistas.
+
+%- arcabouço robusto
+%- resultados interessantes e valiosos
+%- resultados facilmente repodutiveis
+% Trabalhos futuros:
+%- Análise dos resultados por especialistas das ciências sociais.
+%- Confirmação dos resultados por meio de testes de significância estatística.
+
+\bibliographystyle{sbc}
+\bibliography{sbc-template}
+
+\end{document}
