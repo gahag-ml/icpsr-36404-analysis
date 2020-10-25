@@ -1,9 +1,17 @@
 # ICPSR 36404 Analysis
 
 Analysis of the [ICPSR 36404](https://www.icpsr.umich.edu/web/ICPSR/studies/36404) dataset
-using descriptive machine learning.
+using descriptive machine learning. This work was produced as our final project for the
+Descriptive Learning discipline in Universidade Federal de Minas Gerais.
 
-## Usage
+
+## Paper
+
+The paper (portuguese) for this work can be found under the `paper` directory.
+
+
+## Frequent Itemset Mining
+Author: Gabriel Bastos <gabriel.s.b@live.com>
 
 First, download the `delimited` version of the dataset. It is a tsv file, which is used as
 input for the analysis program.
@@ -57,36 +65,35 @@ ARGS:
     <min_sup>    the minimum support ratio ([0, 1.0])
 ```
 
-## Notebooks
-fernanda <fernandaguimaraes28@gmail.com>
 
-First, install the necessary `packages` to run the notebook:
+## Subgroup Discovery
+Author: Fernanda <fernandaguimaraes28@gmail.com>
 
-`pip install scikit-learn`
+First, install the necessary python packages to run the notebook:
 
-`pip install pandas`
+```
+pip install scikit-learn
+pip install pandas
+pip install datetime
+pip install numpy
+pip install pysugbroup
+```
 
-`pip install datetime`
+After, it is necessary to put the data file on the same directory, or update the path in the notebook:
 
-`pip install numpy`
+```data_path = "36404-0001-Data.tsv"```
 
-`pip install pysugbroup`
-
-After that, it is necessary to put the data on the same folder, or alter the path in the notebook:
-
-`data_path = "36404-0001-Data.tsv"`
-
-That's it. Now just run the notebook with jupyter. You can also select the subgroup
+That's it. Now just run the notebook with Jupyter. You can also select the subgroup
 `max_size` by altering the `depth` parameter in the `Subgroup Discovery` section.
 
 
-
-## Additional crates
+## Additional work
 
 The following Rust crates were developed in order to support this work:
 - [dci](https://docs.rs/dci/)
 - [onehot](https://docs.rs/onehot/)
 - [bitmatrix](https://docs.rs/bitmatrix/)
+
 
 ## Licence
 
