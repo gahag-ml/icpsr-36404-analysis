@@ -57,6 +57,27 @@ ARGS:
     <min_sup>    the minimum support ratio ([0, 1.0])
 ```
 
+## Notebooks
+fernanda <fernandaguimaraes28@gmail.com>
+
+First, install the necessary `packages` to run the notebook:
+
+`pip install scikit-learn`
+`pip install pandas`
+`pip install datetime`
+`pip install numpy`
+
+`pip install pysugbroup`
+
+After that, it is necessary to put the data on the same folder, or alter the path in the notebook:
+
+`data_path = "36404-0001-Data.tsv"`
+
+That's it. Now just run the notebook with jupyter. You can also select the subgroup
+`max_size` by altering the `depth` parameter in the `Subgroup Discovery` section.
+
+
+
 ## Additional crates
 
 The following Rust crates were developed in order to support this work:
